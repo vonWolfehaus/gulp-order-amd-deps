@@ -1,6 +1,6 @@
 {
   "name": "gulp-deps-order",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sorts files in stream by dependencies using @requires annotation.",
   "license": "MIT",
   "repository": "nevyk/gulp-deps-order",

@@ -11,7 +11,7 @@ it('should sort files by dependencies defined using @requires', function (cb) {
     /*
      *   === DEPS ===
      * 
-     *         e.js
+     *         e.js        f.js
      *        /    \
      * sub/b.js    d.js
      *    |    \   |
@@ -21,13 +21,31 @@ it('should sort files by dependencies defined using @requires', function (cb) {
      * 
      */
     
-    var orderedFiles = ['e.js', 'd.js', 'sub/b.js', 'sub/c.js', 'a.js'];
+    var depsGraph = {
+        'a.js' : ['sub/b.js', 'sub/c.js'],
+        'sub/b.js' : ['e.js'],
+        'sub/c.js' : ['sub/b.js', 'd.js'],
+        'd.js' : ['e.js'],
+        'e.js' : [],
+        'f.js' : []
+    };
+    
+    var files = [];
 
 	ordered.on('data', function (file) {
-		assert.equal(file.relative, orderedFiles.shift());
+        assert(depsGraph[file.relative]);
+        
+        depsGraph[file.relative].forEach(function (dep) {
+            assert(files.indexOf(dep) !== -1);
+        })
+		
+        files.push(file.relative);
 	});
 
-	ordered.on('end', cb);
+	ordered.on('end', function () {
+        assert.equal(files.length, 6);
+        cb();
+    });
 
 	original.write(new gutil.File({
 		base: __dirname,
@@ -44,6 +62,12 @@ it('should sort files by dependencies defined using @requires', function (cb) {
     original.write(new gutil.File({
 		base: __dirname,
 		path: __dirname + '/e.js',
+		contents: new Buffer('')
+	}));
+    
+    original.write(new gutil.File({
+		base: __dirname,
+		path: __dirname + '/f.js',
 		contents: new Buffer('')
 	}));
     

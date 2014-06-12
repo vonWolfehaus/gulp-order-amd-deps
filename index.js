@@ -24,7 +24,8 @@ module.exports = function (options) {
     options.separator = options.separator || ',';
     
     var graph = [],
-        files = {};
+        files = {},
+        hasDep;
     
     var orderedStream = through.obj();
 
@@ -39,11 +40,16 @@ module.exports = function (options) {
             return cb();
         }
         
+        hasDep = false;
+        
         getDeps(options, file.contents.toString()).map(function (dep) {
             return path.normalize(path.dirname(file.path) + '/' + dep);
         }).forEach(function (dep) {
-            graph.push([file.path].concat(dep));
+            hasDep = true;
+            graph.push([file.path, dep]);
         });
+        
+        if (!hasDep) graph.push([file.path]);
         
         files[file.path] = file;
         

@@ -36,7 +36,7 @@ module.exports = function (options) {
         }
 
         if (file.isStream()) {
-            this.emit('error', new PluginError('gulp-sort-deps', 'Streaming not supported'));
+            this.emit('error', new PluginError('gulp-deps-order', 'Streaming not supported'));
             return cb();
         }
         
@@ -62,7 +62,7 @@ module.exports = function (options) {
         }
         
         catch (e) {
-            this.emit('error', new PluginError('gulp-sort-deps', e.toString()));
+            this.emit('error', new PluginError('gulp-deps-order', e.toString()));
             return cb();
         }
         

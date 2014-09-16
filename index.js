@@ -6,7 +6,7 @@ var async = require('async');
 var path = require('path');
 
 function getDeps(options, str) {
-    var regexp = new RegExp('\/\*[\s\S]*@' + options.annotation + '(.*)');
+    var regexp = new RegExp('\\/\\*[\\s\\S]*@' + options.annotation + '(.*)');
     var match = str.match(regexp);
     
     if (match) {
@@ -26,10 +26,8 @@ module.exports = function (options) {
     var graph = [],
         files = {},
         hasDep;
-    
-    var orderedStream = through.obj();
 
-    var originalStream = through.obj(function (file, enc, cb) {
+    return through.obj(function (file, enc, cb) {
         if (file.isNull()) {
             this.push(file);
             return cb();
@@ -43,7 +41,7 @@ module.exports = function (options) {
         hasDep = false;
         
         getDeps(options, file.contents.toString()).map(function (dep) {
-            return path.normalize(path.dirname(file.path) + '/' + dep);
+            return path.join(path.dirname(file.path), dep);
         }).forEach(function (dep) {
             hasDep = true;
             graph.push([file.path, dep]);
@@ -66,20 +64,11 @@ module.exports = function (options) {
             return cb();
         }
         
-        async.eachSeries(ordered, function (filePath, callback) {
-            orderedStream.write(files[filePath], callback);
-        }, function () {
-            orderedStream.end();
-            cb();
-        });
-    });
-    
-    return {
-        findOrder : function () {
-            return originalStream;
-        },
-        sortFiles : function () {
-            return orderedStream;
+        for (var i = 0; i < ordered.length; i++) {
+            if (!files[ordered[i]]) continue;
+            this.push(files[ordered[i]]);
         }
-    }
+        
+        cb();
+    });
 };

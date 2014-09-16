@@ -20,11 +20,8 @@ var depsOrder = require('gulp-deps-order');
 var concat = require('gulp-concat');
 
 gulp.task('default', function () {
-    var scripts = depsOrder();
-
 	return gulp.src('src/**/*.js')
-		.pipe(scripts.findOrder())
-        .pipe(scripts.sortFiles())
+		.pipe(depsOrder())
         .pipe(concat('build.js'))
 		.pipe(gulp.dest('dist'));
 });

@@ -1,8 +1,8 @@
 # [gulp](http://gulpjs.com)-sort-amd
 
-> Sorts files in stream by dependencies using @requires annotation. Used in conjuction with [gulp-concat](https://github.com/wearefractal/gulp-concat) to concat files in correct order to have dependent files below the theirs dependencies.
+> Sorts files in stream by dependencies defined according to the AMD/require.js specification. Used in conjunction with [gulp-concat](https://github.com/wearefractal/gulp-concat) to combine files in the correct order, so dependent files execute first when loaded.
 
-The point of this plugin is to create bundles of scripts that use the AMD/requirejs definition format by sorting all dependencies into the correct execution order, thereby allowing you to use your modules without adding the weight of requirejs to your website. Instead, you can use a stupid simple define/require shim (found in `/dist`).
+This plugin allows you to use your modules without adding the weight of requirejs to your website. Instead, you can use a stupid simple define/require shim (found in `/shim`).
 
 The greatest benefit of this is the ability to require modules from outside the bundle itself, thereby allowing you to split bundles up per page (or even within a single page app) and still allow modules across bundles to communicate with each other without requirejs.
 
@@ -20,13 +20,16 @@ $ npm install --save-dev gulp-sort-amd
 
 ```js
 var gulp = require('gulp');
-var depsOrder = require('gulp-deps-order');
+var sortAmd = require('gulp-sort-amd');
+var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 
 gulp.task('default', function () {
 	return gulp.src('src/**/*.js')
-		.pipe(depsOrder())
-        .pipe(concat('build.js'))
+		.pipe(sortAmd())
+		.pipe(sourcemaps.init())
+        .pipe(concat('scripts.js'))
+        .pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest('dist'));
 });
 ```

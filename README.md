@@ -2,7 +2,7 @@
 
 > Sorts files in stream by dependencies defined according to the AMD/require.js specification. Used in conjunction with [gulp-concat](https://github.com/wearefractal/gulp-concat) to combine files in the correct order, so dependent files execute first when loaded.
 
-This plugin allows you to use your modules without adding the weight of requirejs to your website. Instead, you can use a stupid simple define/require shim (found in `/shim`).
+This plugin allows you to use your modules without adding the weight of requirejs to your website. Instead, you can use a stupid simple define/require shim (found in `/shim`). In order to use it though, you **must** name all your modules, or it can't be retrieved from the hash map. It will collide with any AMD library, but it will still work with any modules using UMD wrappers.
 
 The greatest benefit of this is the ability to require modules from outside the bundle itself, thereby allowing you to split bundles up per page (or even within a single page app) and still allow modules across bundles to communicate with each other without requirejs.
 
@@ -36,9 +36,9 @@ gulp.task('default', function () {
 
 ### Source file
 
-Names modules with dependencies as a parameter:
+Named modules with dependencies as a parameter:
 ```js
-define('a', ['b', 'c'], function(b, c) {
+define('a', ['sub/b', '../c'], function(b, c) {
 	// hot sauce
 });
 ```

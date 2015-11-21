@@ -19,5 +19,6 @@
 	}
 
 	window.define = set;
+	window.define.amd = false;
 	window.require = get;
 }());

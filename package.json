@@ -1,14 +1,10 @@
 {
-  "name": "gulp-deps-order",
-  "version": "0.2.0",
-  "description": "Sorts files in stream by dependencies using @requires annotation.",
+  "name": "gulp-sort-amd",
+  "version": "0.9.0",
+  "description": "Sorts files in stream by dependencies defined according to AMD/requirejs spec.",
   "license": "MIT",
-  "repository": "nevyk/gulp-deps-order",
-  "author": {
-    "name": "nevyk",
-    "email": "petr.nevyhosteny@gmail.com",
-    "url": "https://github.com/nevyk"
-  },
+  "repository": "vonWolfehaus/gulp-sort-amd",
+  "contributors": ["nevyk", "Corey Birnbaum"],
   "engines": {
     "node": ">=0.10.0"
   },
@@ -23,13 +19,19 @@
     "dependency",
     "dep",
     "order",
-    "sort"
+    "sort",
+    "define",
+    "require",
+    "source",
+    "analyze",
+    "ast",
+    "amd"
   ],
   "dependencies": {
+    "amdetective": "^0.2.0",
     "gulp-util": "~2.2.14",
     "through2": "~0.4.1",
-    "toposort": "~0.2.10",
-    "async": "~0.9.0"
+    "toposort": "^0.2.12"
   },
   "devDependencies": {
     "mocha": "*"

@@ -2,73 +2,66 @@
 var PluginError = require('gulp-util').PluginError;
 var through = require('through2');
 var toposort = require('toposort');
-var async = require('async');
+var amdetective = require('amdetective');
 var path = require('path');
 
-function getDeps(options, str) {
-    var regexp = new RegExp('\\/\\*[\\s\\S]*@' + options.annotation + '(.*)');
-    var match = str.match(regexp);
-    
-    if (match) {
-        return match[1].split(options.separator).map(function (dep) {
-            return dep.trim();
-        });
-    }
-    
-    return [];
-}
+module.exports = function () {
+	var graph = [],
+		files = {},
+		ext = null,
+		hasDep;
 
-module.exports = function (options) {
-    options = options || {};
-    options.annotation = options.annotation || 'requires';
-    options.separator = options.separator || ',';
-    
-    var graph = [],
-        files = {},
-        hasDep;
+	return through.obj(function (file, enc, cb) {
+		if (file.isNull()) {
+			this.push(file);
+			return cb();
+		}
 
-    return through.obj(function (file, enc, cb) {
-        if (file.isNull()) {
-            this.push(file);
-            return cb();
-        }
+		if (file.isStream()) {
+			this.emit('error', new PluginError('gulp-deps-order', 'Streaming not supported'));
+			return cb();
+		}
 
-        if (file.isStream()) {
-            this.emit('error', new PluginError('gulp-deps-order', 'Streaming not supported'));
-            return cb();
-        }
-        
-        hasDep = false;
-        
-        getDeps(options, file.contents.toString()).map(function (dep) {
-            return path.join(path.dirname(file.path), dep);
-        }).forEach(function (dep) {
-            hasDep = true;
-            graph.push([file.path, dep]);
-        });
-        
-        if (!hasDep) graph.push([file.path]);
-        
-        files[file.path] = file;
-        
-        cb();
-    }, function (cb) {
-        var ordered;
-        
-        try {
-            ordered = toposort(graph).reverse();
-        }
-        
-        catch (e) {
-            this.emit('error', new PluginError('gulp-deps-order', e.toString()));
-            return cb();
-        }
-        
-        for (var i = 0; i < ordered.length; i++) {
-            if (!files[ordered[i]]) continue;
-            this.push(files[ordered[i]]);
-        }
-        
-        cb();
-    });
+		hasDep = false;
+		ext = '.' + file.path.substring(file.path.lastIndexOf('.') + 1);
+
+		var detect = amdetective(file.contents.toString());
+		// anonymous modules will have amdetective return an array of strings
+		// if named, then it returns an array of {name:String, deps:String[]}
+		var amdDeps = typeof(detect[0]) === 'string' ? detect : detect[0].deps;
+
+		amdDeps.map(function (dep) {
+			if (typeof(dep) !== 'string') dep = dep.name;
+			dep += ext; // attach the file extension otherwise the graph's keys won't match, throwing toposort way off
+			return path.join(path.dirname(file.path), dep);
+		}).forEach(function (dep) {
+			hasDep = true;
+			graph.push([file.path, dep]);
+		});
+
+		if (!hasDep) graph.push([file.path]);
+
+		files[file.path] = file;
+
+		cb();
+	}, function (cb) {
+		var ordered;
+
+		try {
+			ordered = toposort(graph).reverse();
+		}
+		catch (e) {
+			this.emit('error', new PluginError('gulp-deps-order', e.toString()));
+			return cb();
+		}
+
+		// search and ignore empty strings that were put there by files with no deps
+		for (var i = 0; i < ordered.length; i++) {
+			if (!files[ordered[i]]) continue;
+
+			this.push(files[ordered[i]]);
+		}
+
+		cb();
+	});
 };

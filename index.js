@@ -28,7 +28,7 @@ module.exports = function () {
 		var detect = amdetective(file.contents.toString());
 		// anonymous modules will have amdetective return an array of strings
 		// if named, then it returns an array of {name:String, deps:String[]}
-		var amdDeps = typeof(detect[0]) === 'string' ? detect : detect[0].deps;
+		var amdDeps = !detect[0] || typeof(detect[0]) === 'string' ? detect : detect[0].deps;
 
 		amdDeps.map(function (dep) {
 			if (typeof(dep) !== 'string') dep = dep.name;
